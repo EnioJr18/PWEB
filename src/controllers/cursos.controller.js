@@ -1,45 +1,30 @@
-import { cursos } from "../dados/cursos.js";
+import { CursosService } from "../services/cursos.services.js";
 
-export function listarCursos(req, resp) {
-  resp.json(cursos);
-}
 
-export function buscarCursoPorId(req, res) {
-  const id = Number(req.params.id);
-  const curso = cursos.find((c) => c.id === id);
-
-  if (!curso) {
-    return res.status(404).json({ error: "Curso não encontrado" });
-  }
-  res.json(curso);
-}
-
-export function criarCurso(req, res) {
-  const novoCurso = req.body;
-  novoCurso.nome = novoCurso.nome.trim();
-
-  cursos.push(novoCurso);
-  res.status(201).json(novoCurso);
-}
-
-export function atualizarCurso(req, res) {
-  const id = Number(req.params.id);
-  const cursoIndex = cursos.findIndex((c) => c.id === id);
-
-  if (cursoIndex === -1) {
-    return res.status(404).json({ error: "Curso não encontrado" });
+export class CursosController {
+  constructor() {
+    this.cursosService = new CursosService();
   }
 
-  const { nome, cargaHoraria, nivel, preco, ativo } = req.body;
+  async listarCursos(req, resp) {
+    resp.json(await this.cursosService.listarTodos());
+  }
 
-  cursos[cursoIndex] = {
-    id: id,
-    nome: nome.trim(),
-    cargaHoraria,
-    nivel,
-    preco,
-    ativo,
-  };
+  async buscarCursoPorId(req, res) {
+    const id = Number(req.params.id);
+    res.json(await this.cursosService.buscarPorId(id));
+  }
 
-  res.json(cursos[cursoIndex]);
+  async criarCurso(req, res) {
+    const dados = req.body;
+    const novo = await this.cursosService.criar(dados);
+    res.status(201).json(novo);
+  }
+
+  async atualizarCurso(req, res) {
+    const id = Number(req.params.id);
+    const dados = req.body;
+    const atualizado = await this.cursosService.atualizar(id, dados);
+    res.json(atualizado);
+  }
 }
